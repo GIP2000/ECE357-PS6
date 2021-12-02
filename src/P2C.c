@@ -3,6 +3,7 @@
 #include <sys/mman.h>
 #define SHELL_NUMBER 3
 
+// one indexed for children 0 is parent 
 int my_procnum = 0; 
 
 int factorial(int val){
@@ -14,9 +15,7 @@ int factorial(int val){
 
 void task(struct sem* source, struct sem* dest){
     if(sem_try(source) == 0){
-        fprintf(stderr, "before wait\n");
-        sem_wait(source);
-        fprintf(stderr, "after wait\n");
+        sem_wait(source,my_procnum-1);
         sem_inc(dest);
         return;
     }
@@ -30,7 +29,6 @@ int main(){
         sem_init(shells+i, 1);
     }
     int fork_num = factorial(SHELL_NUMBER);
-    fprintf(stderr, "fork_num: %d\n", fork_num);
     pid_t my_pid = getpid(), ftest, children_pid[fork_num];
     for(i = 0; i<fork_num; i++){
         ftest = fork(); 
@@ -40,27 +38,27 @@ int main(){
         } else if(ftest == 0){ // child
             my_procnum = i+1; 
             my_pid = getpid();
+            fprintf(stderr, "VCPU %d staring, pid %d\n", my_procnum,my_pid ); 
             break; 
         } else 
             children_pid[i] = ftest;
     }
     if(ftest == 0){ // child
-        fprintf(stderr, "I am child %d of %d\n", my_procnum, fork_num);
         switch(my_procnum){
             case 1:
-                task(shells+0, shells+1);
+                task(shells, shells+1);
                 break;
             case 2:
-                task(shells+0, shells+2);
+                task(shells, shells+2);
                 break;
             case 3:
-                task(shells+1, shells+0);
+                task(shells+1, shells);
                 break;
             case 4:
                 task(shells+1, shells+2);
                 break;
             case 5:
-                task(shells+2, shells+0);
+                task(shells+2, shells);
                 break;
             case 6:
                 task(shells+2, shells+1);
@@ -68,13 +66,19 @@ int main(){
             default:
                 break;
         }
-        // int val = sem_try(shells+my_procnum-1); 
-        // fprintf(stderr, "try_sem -> %s\n",  val == 1 ? "true" : "false");
+        int signal_handler_invoked = 0; 
+        for(i = 0; i<SHELL_NUMBER; i++){
+            signal_handler_invoked+=shells[i].woken_counter[my_procnum-1]; 
+        }
+        fprintf(stderr, "Child %d (pid %d) done, signal Handler was invoked %d times\n", my_procnum,my_pid,signal_handler_invoked); 
         return 0; 
     }
-    for(i = 0; i<fork_num; i++){
+
+    for(i = 0; i<fork_num; i++){ // wait for all children to complete 
         waitpid(children_pid[i], NULL, 0);
+        fprintf(stderr, "VCPU %d done\n", i+1); 
     }
+    
 
     return 0; 
 }

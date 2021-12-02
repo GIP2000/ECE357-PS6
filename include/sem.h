@@ -12,11 +12,11 @@ struct sem{
     int woken_counter[N_PROC]; 
 };
 
-// initis the semaphore to the count and initalizes all the countesr
+// Initis the semaphore to the count and initalizes all the countesr
 void sem_init(struct sem* s,int count); 
 
-// trys to decrement if it would block returns 0
-//Otherwseise decrements and retruns 1
+// Trys to decrement if it would block returns 0
+// Otherwseise decrements and retruns 1
 int sem_try(struct sem* s); 
 
 // Trys to decrement if not blocks until resources are available 

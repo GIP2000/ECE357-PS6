@@ -20,7 +20,7 @@ P2C.o: src/P2C.c include/sem.h include/tas.h include/spinlock.h
 	gcc -c src/P2C.c
 
 P2C.out: P2C.o sem.o tas.o spinlock.o 
-	gcc -o P2C.out P2C.o  sem.o tas.o spinlock.o
+	gcc -g -o P2C.out P2C.o  sem.o tas.o spinlock.o
 clean:
 	rm -f *.o
 	rm -f *.out

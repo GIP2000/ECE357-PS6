@@ -37,6 +37,11 @@ void sem_wait(struct sem* s, int my_procnum ){
         return; 
     } 
     // block
+    sigset_t newmask,oldmask; 
+    sigfillset(&newmask); 
+    signal(SIGUSR1,signalHandler); 
+    sigprocmask(SIG_BLOCK,&newmask,&oldmask); // block signals so the process can have time to sleep before been woken
+    
     int i; 
     for(i = 0; i<N_PROC; i++){
         if(s->sleepers[i] == -1){
@@ -44,10 +49,7 @@ void sem_wait(struct sem* s, int my_procnum ){
             break; 
         }
     }
-    sigset_t newmask,oldmask; 
-    signal(SIGUSR1,signalHandler); 
-    sigfillset(&newmask); 
-    sigprocmask(SIG_BLOCK,&newmask,&oldmask); // block signals so the process can have time to sleep before been woken
+    
     s->sleep_counter[my_procnum]++; 
     spin_unlock(&(s->spinlock)); 
     // fprintf(stderr, "sem_wait sleeping\n");

@@ -42,25 +42,26 @@ void sem_wait(struct sem* s, int my_procnum ){
     signal(SIGUSR1,signalHandler); 
     sigprocmask(SIG_BLOCK,&newmask,&oldmask); // block signals so the process can have time to sleep before been woken
     
-    int i; 
-    for(i = 0; i<N_PROC; i++){
-        if(s->sleepers[i] == -1){
-            s->sleepers[i] = getpid(); 
-            break; 
-        }
-    }
+    // int i; 
+    // for(i = 0; i<N_PROC; i++){
+    //     if(s->sleepers[i] == -1){
+    //         s->sleepers[i] = getpid(); 
+    //         break; 
+    //     }
+    // }
+    s->sleepers[my_procnum] = getpid();
     
     s->sleep_counter[my_procnum]++; 
     spin_unlock(&(s->spinlock)); 
-    // fprintf(stderr, "sem_wait sleeping\n");
+    // fprintf(stderr, "VCPU %d: sleeping\n",my_procnum+1);
     sigsuspend(&oldmask);
 
     // wake up
-    // fprintf(stderr, "sem_wait waking up\n");
+    // fprintf(stderr, "VCPU %d waking up\n",my_procnum+1);
     s->woken_counter[my_procnum]++; 
     sigprocmask(SIG_SETMASK,&oldmask,NULL); // unblock signals
     signal(SIGUSR1,SIG_DFL); 
-    s->sleepers[i] = -1;
+    s->sleepers[my_procnum] = -1;
     return sem_wait(s,my_procnum); // try again
     
 }

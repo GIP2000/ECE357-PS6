@@ -20,6 +20,7 @@ void sem_init(struct sem* s,int count);
 int sem_try(struct sem* s); 
 
 // Trys to decrement if not blocks until resources are available 
+// my_procnum is a index starting @0 for the current process This value must be lower than N_PROC
 void sem_wait(struct sem* s, int my_procnum);
 
 // Increments the semaphmore if it is now positive wake all sleeping processes 

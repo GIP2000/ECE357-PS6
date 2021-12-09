@@ -31,10 +31,8 @@ void childHandler(struct sem* shells,pid_t my_pid,int task1,int task2,int mult){
     }
     int i; 
     fprintf(stderr, "VCPU %d (pid %d) is doing task %d,%d\n", my_procnum, my_pid, task1, task2);
-    for(i = 0; i < mult; i++){
+    for(i = 0; i < mult; i++)
         task(shells+task1, shells+task2);
-        // fprintf(stderr, "VCPU %d (pid %d) did task %d,%d\n", my_procnum, my_pid, task1, task2);
-    }
     int signal_handler_invoked = 0; 
     int sleep_count = 0; 
     for(i = 0; i<SHELL_NUMBER; i++){
